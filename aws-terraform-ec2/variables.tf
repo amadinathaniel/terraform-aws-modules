@@ -10,7 +10,7 @@ variable "instance_name" {
 variable "ami_id" {
   description = "Specific AMI ID for the launch template. overrides os_type if provided."
   type        = string
-  default     = ""
+  default     = null
 }
 
 variable "os_type" {
@@ -108,6 +108,7 @@ variable "desired_capacity" {
 variable "min_size" {
   description = "Minimum number of instances in the ASG."
   type        = number
+  default     = 0
   validation {
     condition     = var.min_size >= 0
     error_message = "min_size must be 0 or greater."
@@ -117,6 +118,7 @@ variable "min_size" {
 variable "max_size" {
   description = "Maximum number of instances in the ASG."
   type        = number
+  default     = 1
   validation {
     condition     = var.max_size >= 1
     error_message = "max_size must be at least 1."

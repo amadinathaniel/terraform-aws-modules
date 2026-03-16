@@ -129,6 +129,7 @@ resource "aws_vpc_security_group_ingress_rule" "custom" {
 # Launch Template
 # ==============================================================================
 resource "aws_launch_template" "this" {
+  count       = var.use_asg ? 1 : 0
   name        = "${var.instance_name}-lt"
   description = "Launch template for ${var.instance_name}"
   image_id    = local.resolved_ami_id
@@ -206,7 +207,7 @@ resource "aws_autoscaling_group" "this" {
   target_group_arns         = var.target_group_arns
 
   launch_template {
-    id      = aws_launch_template.this.id
+    id      = aws_launch_template.this[0].id
     version = "$Latest"
   }
 

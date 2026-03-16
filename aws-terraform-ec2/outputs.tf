@@ -1,11 +1,11 @@
 output "launch_template_id" {
-  description = "ID of the launch template."
-  value       = aws_launch_template.this.id
+  description = "ID of the launch template (if created)."
+  value       = length(aws_launch_template.this) > 0 ? aws_launch_template.this[0].id : ""
 }
 
 output "launch_template_latest_version" {
-  description = "Latest version of the launch template."
-  value       = aws_launch_template.this.latest_version
+  description = "Latest version of the launch template (if created)."
+  value       = length(aws_launch_template.this) > 0 ? aws_launch_template.this[0].latest_version : ""
 }
 
 output "autoscaling_group_id" {
