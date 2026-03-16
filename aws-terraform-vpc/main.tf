@@ -36,10 +36,10 @@ resource "aws_subnet" "public" {
   map_public_ip_on_launch = true
 
   tags = merge(var.common_tags, {
-    Name                                                        = "${var.project_name}-${var.environment}-public-${each.key}"
-    Component                                                   = "network"
-    "kubernetes.io/cluster/${var.cluster_name}"                  = var.cluster_name != "" ? "shared" : null
-    "kubernetes.io/role/elb"                                     = var.cluster_name != "" ? "1" : null
+    Name                                        = "${var.project_name}-${var.environment}-public-${each.key}"
+    Component                                   = "network"
+    "kubernetes.io/cluster/${var.cluster_name}" = var.cluster_name != "" ? "shared" : null
+    "kubernetes.io/role/elb"                    = var.cluster_name != "" ? "1" : null
   })
 }
 
@@ -54,10 +54,10 @@ resource "aws_subnet" "private" {
   cidr_block        = each.value
 
   tags = merge(var.common_tags, {
-    Name                                                        = "${var.project_name}-${var.environment}-private-${each.key}"
-    Component                                                   = "network"
-    "kubernetes.io/cluster/${var.cluster_name}"                  = var.cluster_name != "" ? "shared" : null
-    "kubernetes.io/role/internal-elb"                            = var.cluster_name != "" ? "1" : null
+    Name                                        = "${var.project_name}-${var.environment}-private-${each.key}"
+    Component                                   = "network"
+    "kubernetes.io/cluster/${var.cluster_name}" = var.cluster_name != "" ? "shared" : null
+    "kubernetes.io/role/internal-elb"           = var.cluster_name != "" ? "1" : null
   })
 }
 

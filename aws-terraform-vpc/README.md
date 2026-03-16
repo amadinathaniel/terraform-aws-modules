@@ -42,13 +42,13 @@ module "vpc" {
 | environment | Environment name | string | - | yes |
 | vpc_cidr | CIDR block for the VPC | string | - | yes |
 | availability_zones | List of AZs | list(string) | - | yes |
-| public_subnet_cidrs | Public subnet CIDRs per AZ | map(string) | - | yes |
-| private_subnet_cidrs | Private subnet CIDRs per AZ | map(string) | - | yes |
-| database_subnet_cidrs | Database subnet CIDRs per AZ | map(string) | {} | no |
-| cache_subnet_cidrs | Cache subnet CIDRs per AZ | map(string) | {} | no |
+| public_subnet_cidrs | Public subnet CIDRs per AZ | list(string) | - | yes |
+| private_subnet_cidrs | Private subnet CIDRs per AZ | list(string) | - | yes |
+| database_subnet_cidrs | Database subnet CIDRs per AZ | list(string) | {} | no |
+| cache_subnet_cidrs | Cache subnet CIDRs per AZ | list(string) | {} | no |
 | single_nat_gateway | Use single NAT Gateway | bool | true | no |
 | cluster_name | EKS cluster name for subnet tags | string | "" | no |
-| common_tags | Common tags for all resources | map(string) | {} | no |
+| common_tags | Common tags for all resources | list(string) | {} | no |
 
 ## Outputs
 

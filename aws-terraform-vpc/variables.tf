@@ -35,7 +35,7 @@ variable "availability_zones" {
 }
 
 variable "public_subnet_cidrs" {
-  description = "Map of availability zone to CIDR block for public subnets."
+  description = "List of CIDR blocks for public subnets (one per AZ)."
   type        = list(string)
   validation {
     condition     = length(var.public_subnet_cidrs) >= 1
@@ -44,7 +44,7 @@ variable "public_subnet_cidrs" {
 }
 
 variable "private_subnet_cidrs" {
-  description = "Map of availability zone to CIDR block for private subnets."
+  description = "List of CIDR blocks for private subnets (one per AZ)."
   type        = list(string)
   validation {
     condition     = length(var.private_subnet_cidrs) >= 1
@@ -53,13 +53,13 @@ variable "private_subnet_cidrs" {
 }
 
 variable "database_subnet_cidrs" {
-  description = "Map of availability zone to CIDR block for database subnets."
+  description = "List of CIDR blocks for database subnets (one per AZ)."
   type        = list(string)
   default     = []
 }
 
 variable "cache_subnet_cidrs" {
-  description = "Map of availability zone to CIDR block for cache subnets."
+  description = "List of CIDR blocks for cache subnets (one per AZ)."
   type        = list(string)
   default     = []
 }
