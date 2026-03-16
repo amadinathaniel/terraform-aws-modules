@@ -18,19 +18,24 @@ Terraform module to create an AWS VPC with public, private, database, and cache 
 module "vpc" {
   source = "../terraform-aws-modules/aws-terraform-vpc"
 
-  project_name       = var.project_name
-  environment        = var.environment
-  cluster_name       = length(var.eks_clusters) > 0 ? "${var.project_name}-${var.environment}-${keys(var.eks_clusters)[0]}" : ""
-  vpc_cidr           = var.vpc_cidr
-  availability_zones = var.availability_zones
+  project_name       = "teleios-nate"
+  environment        = "dev"
+  cluster_name       = "teleios-nate-dev-eks"
+  vpc_cidr           = "10.10.0.0/16"
+  availability_zones = ["us-east-1a", "us-east-1b"]
 
-  public_subnet_cidrs   = var.public_subnet_cidrs
-  private_subnet_cidrs  = var.private_subnet_cidrs
-  database_subnet_cidrs = var.database_subnet_cidrs
-  cache_subnet_cidrs    = var.cache_subnet_cidrs
+  public_subnet_cidrs   = ["10.10.0.0/24", "10.10.1.0/24"]
+  private_subnet_cidrs  = ["10.10.10.0/24", "10.10.11.0/24"]
+  database_subnet_cidrs = ["10.10.20.0/24", "10.10.21.0/24"]
+  cache_subnet_cidrs    = ["10.10.30.0/24", "10.10.31.0/24"]
 
-  single_nat_gateway = var.single_nat_gateway
-  common_tags        = var.common_tags
+  single_nat_gateway = true
+
+  common_tags = {
+    Project     = "e-commerce-infrastructure"
+    Environment = "dev"
+    ManagedBy   = "terraform"
+  }
 }
 ```
 
