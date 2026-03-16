@@ -46,6 +46,15 @@ resource "aws_s3_bucket_public_access_block" "this" {
 }
 
 # ==============================================================================
+# Bucket Policy (optional)
+# ==============================================================================
+resource "aws_s3_bucket_policy" "this" {
+  count  = var.bucket_policy != null ? 1 : 0
+  bucket = aws_s3_bucket.this.id
+  policy = var.bucket_policy
+}
+
+# ==============================================================================
 # Lifecycle Rules
 # ==============================================================================
 resource "aws_s3_bucket_lifecycle_configuration" "this" {
@@ -58,11 +67,8 @@ resource "aws_s3_bucket_lifecycle_configuration" "this" {
       id     = rule.value.id
       status = rule.value.enabled ? "Enabled" : "Disabled"
 
-      dynamic "filter" {
-        for_each = rule.value.prefix != null ? [rule.value.prefix] : []
-        content {
-          prefix = filter.value
-        }
+      filter {
+        prefix = rule.value.prefix != null ? rule.value.prefix : ""
       }
 
       dynamic "expiration" {

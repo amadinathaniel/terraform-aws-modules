@@ -35,6 +35,12 @@ variable "kms_key_id" {
   default     = null
 }
 
+variable "bucket_policy" {
+  description = "JSON bucket policy to attach. Leave null to skip."
+  type        = string
+  default     = null
+}
+
 variable "lifecycle_rules" {
   description = "List of lifecycle rule configurations for the bucket."
   type = list(object({
