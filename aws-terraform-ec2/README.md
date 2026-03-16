@@ -74,13 +74,11 @@ module "ec2_bastion" {
   instance_type               = "t3.micro"
   subnet_ids                  = ["subnet-abc123"]
   vpc_id                      = "vpc-123456"
-  use_asg                     = true
+  use_asg                     = false
   associate_public_ip_address = true
   root_volume_size            = 30
   iam_role_enabled            = true
   ssm_managed                 = true
-  min_size                    = 0
-  max_size                    = 1
 
   ingress_rules = {
     ssh = {
