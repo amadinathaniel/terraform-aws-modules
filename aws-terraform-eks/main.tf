@@ -174,7 +174,8 @@ resource "aws_eks_cluster" "this" {
   enabled_cluster_log_types = var.cluster_log_types
 
   access_config {
-    authentication_mode = "API_AND_CONFIG_MAP"
+    authentication_mode                         = "API"
+    bootstrap_cluster_creator_admin_permissions = true
   }
 
   tags = merge(var.common_tags, {
@@ -195,6 +196,7 @@ resource "aws_eks_node_group" "this" {
   for_each = var.node_groups
 
   cluster_name    = aws_eks_cluster.this.name
+  version         = var.cluster_version
   node_group_name = "${var.cluster_name}-${each.key}"
   node_role_arn   = aws_iam_role.node.arn
   subnet_ids      = var.private_subnet_ids
@@ -233,6 +235,11 @@ resource "aws_eks_node_group" "this" {
     aws_iam_role_policy_attachment.node_ecr_read_only,
     aws_iam_role_policy_attachment.node_ssm,
   ]
+
+  #Allow external changes without terraform plan differences (e.g. from cluster autoscaler or manual scaling)
+  lifecycle {
+    ignore_changes = [scaling_config[0].desired_size]
+  }
 }
 
 # ==============================================================================
