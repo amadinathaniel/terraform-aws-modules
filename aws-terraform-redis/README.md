@@ -47,6 +47,7 @@ module "redis" {
 | node_type | ElastiCache node type | string | "cache.t4g.micro" | no |
 | num_cache_clusters | Number of cache clusters (1-6) | number | - | yes |
 | automatic_failover_enabled | Enable automatic failover (needs 2+ nodes) | bool | false | no |
+| multi_az_enabled | Enable Multi-AZ mode (needs 2+ nodes and automatic failover enabled) | bool | false | no |
 | transit_encryption_enabled | Enable encryption in transit | bool | true | no |
 | at_rest_encryption_enabled | Enable encryption at rest | bool | true | no |
 | create_auth_token | Create random AUTH token | bool | true | no |
