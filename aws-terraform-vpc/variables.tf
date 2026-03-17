@@ -70,10 +70,10 @@ variable "single_nat_gateway" {
   default     = true
 }
 
-variable "cluster_name" {
-  description = "EKS cluster name for Kubernetes discovery tags on subnets."
-  type        = string
-  default     = ""
+variable "cluster_names" {
+  description = "List of EKS cluster names for Kubernetes discovery tags on subnets."
+  type        = list(string)
+  default     = []
 }
 
 variable "common_tags" {

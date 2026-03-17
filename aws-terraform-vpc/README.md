@@ -52,7 +52,7 @@ module "vpc" {
 | database_subnet_cidrs | Database subnet CIDRs per AZ | list(string) | {} | no |
 | cache_subnet_cidrs | Cache subnet CIDRs per AZ | list(string) | {} | no |
 | single_nat_gateway | Use single NAT Gateway | bool | true | no |
-| cluster_name | EKS cluster name for subnet tags | string | "" | no |
+| cluster_name | EKS cluster name for subnet tags | list(string) | "" | no |
 | common_tags | Common tags for all resources | list(string) | {} | no |
 
 ## Outputs
