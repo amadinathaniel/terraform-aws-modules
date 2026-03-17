@@ -44,6 +44,35 @@ resource "aws_db_subnet_group" "this" {
 }
 
 # ==============================================================================
+# Master User Password (stored in Secrets Manager)
+# ==============================================================================
+resource "random_password" "master" {
+  length  = 32
+  special = false
+}
+
+resource "aws_secretsmanager_secret" "master_password" {
+  name                    = "${var.identifier}/postgres"
+  recovery_window_in_days = 0
+
+  tags = merge(var.common_tags, {
+    Name      = "${var.identifier}/postgres"
+    Component = "rds"
+  })
+}
+
+resource "aws_secretsmanager_secret_version" "master_password" {
+  secret_id = aws_secretsmanager_secret.master_password.id
+  secret_string = jsonencode({
+    POSTGRES_USER     = var.username
+    POSTGRES_PASSWORD = random_password.master.result
+    POSTGRES_HOST     = aws_db_instance.this.address
+    POSTGRES_PORT     = aws_db_instance.this.port
+    POSTGRES_DB       = var.db_name
+  })
+}
+
+# ==============================================================================
 # RDS Instance
 # ==============================================================================
 resource "aws_db_instance" "this" {
@@ -55,7 +84,7 @@ resource "aws_db_instance" "this" {
   db_name  = var.db_name
   username = var.username
 
-  manage_master_user_password = true
+  password = random_password.master.result
 
   allocated_storage     = var.allocated_storage
   max_allocated_storage = var.max_allocated_storage
