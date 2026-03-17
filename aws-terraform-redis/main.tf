@@ -52,6 +52,27 @@ resource "random_password" "auth_token" {
   special = false
 }
 
+resource "aws_secretsmanager_secret" "auth_token" {
+  count                   = var.create_auth_token && var.transit_encryption_enabled ? 1 : 0
+  name                    = "${var.replication_group_id}/redis"
+  recovery_window_in_days = 0
+
+  tags = merge(var.common_tags, {
+    Name      = "${var.replication_group_id}/redis"
+    Component = "redis"
+  })
+}
+
+resource "aws_secretsmanager_secret_version" "auth_token" {
+  count     = var.create_auth_token && var.transit_encryption_enabled ? 1 : 0
+  secret_id = aws_secretsmanager_secret.auth_token[0].id
+  secret_string = jsonencode({
+    REDIS_PASSWORD = random_password.auth_token[0].result
+    REDIS_HOST     = aws_elasticache_replication_group.this.primary_endpoint_address
+    REDIS_PORT     = 6379
+  })
+}
+
 # ==============================================================================
 # ElastiCache Replication Group
 # ==============================================================================

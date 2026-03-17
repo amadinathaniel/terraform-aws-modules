@@ -28,3 +28,13 @@ output "auth_token" {
   value       = length(random_password.auth_token) > 0 ? random_password.auth_token[0].result : ""
   sensitive   = true
 }
+
+output "auth_token_secret_arn" {
+  description = "ARN of the Secrets Manager secret containing the Redis auth token."
+  value       = length(aws_secretsmanager_secret.auth_token) > 0 ? aws_secretsmanager_secret.auth_token[0].arn : ""
+}
+
+output "auth_token_secret_name" {
+  description = "Name of the Secrets Manager secret containing the Redis auth token."
+  value       = length(aws_secretsmanager_secret.auth_token) > 0 ? aws_secretsmanager_secret.auth_token[0].name : ""
+}
