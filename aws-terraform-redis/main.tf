@@ -89,6 +89,7 @@ resource "aws_elasticache_replication_group" "this" {
   subnet_group_name          = aws_elasticache_subnet_group.this.name
   security_group_ids         = [aws_security_group.this.id]
   automatic_failover_enabled = var.automatic_failover_enabled
+  multi_az_enabled           = var.multi_az_enabled
 
   transit_encryption_enabled = var.transit_encryption_enabled
   at_rest_encryption_enabled = var.at_rest_encryption_enabled
@@ -103,6 +104,10 @@ resource "aws_elasticache_replication_group" "this" {
     precondition {
       condition     = !var.automatic_failover_enabled || var.num_cache_clusters >= 2
       error_message = "automatic_failover_enabled requires at least 2 cache clusters."
+    }
+    precondition {
+      condition     = !var.multi_az_enabled || (var.automatic_failover_enabled && var.num_cache_clusters >= 2)
+      error_message = "multi_az_enabled requires automatic_failover_enabled and at least 2 cache clusters."
     }
   }
 }

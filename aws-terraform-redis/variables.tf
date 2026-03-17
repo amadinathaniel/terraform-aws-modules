@@ -37,6 +37,12 @@ variable "automatic_failover_enabled" {
   default     = false
 }
 
+variable "multi_az_enabled" {
+  description = "Whether to enable Multi-AZ for the replication group (requires automatic_failover_enabled and num_cache_clusters >= 2)."
+  type        = bool
+  default     = false
+}
+
 variable "transit_encryption_enabled" {
   description = "Whether to enable encryption in transit."
   type        = bool
