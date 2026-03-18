@@ -100,6 +100,14 @@ resource "helm_release" "cluster_autoscaler" {
       value = var.aws_region
     }
   ]
+
+  depends_on = [
+    aws_iam_role_policy_attachment.cluster_autoscaler,
+    aws_eks_pod_identity_association.cluster_autoscaler
+  ]
+
+  timeout = 900
+  atomic  = true
 }
 
 # ==============================================================================
@@ -175,6 +183,10 @@ resource "helm_release" "aws_lbc" {
     {
       name  = "vpcId"
       value = var.vpc_id
+    },
+    {
+      name  = "region"
+      value = var.aws_region
     }
   ]
 
@@ -188,6 +200,9 @@ resource "helm_release" "aws_lbc" {
   depends_on = [
     aws_iam_role_policy_attachment.aws_lbc,
   aws_eks_pod_identity_association.aws_lbc]
+
+  timeout = 900
+  atomic  = true
 }
 
 # ==============================================================================
