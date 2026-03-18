@@ -13,7 +13,7 @@ resource "aws_security_group" "this" {
 }
 
 resource "aws_vpc_security_group_ingress_rule" "allowed" {
-  for_each = { for idx, sg_id in var.allowed_security_group_ids : tostring(idx) => sg_id }
+  for_each = toset(var.allowed_security_group_ids)
 
   security_group_id            = aws_security_group.this.id
   description                  = "Allow Redis access from ${each.value}"

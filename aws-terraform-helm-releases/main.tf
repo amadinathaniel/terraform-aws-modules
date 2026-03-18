@@ -267,7 +267,7 @@ data "aws_caller_identity" "current" {
 }
 
 data "aws_iam_policy_document" "external_secrets_assume" {
-  count = var.enable_external_secrets && var.oidc_provider_arn != "" ? 1 : 0
+  count = var.enable_external_secrets ? 1 : 0
 
   statement {
     actions = ["sts:AssumeRoleWithWebIdentity"]
