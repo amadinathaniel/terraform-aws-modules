@@ -13,7 +13,7 @@ resource "aws_security_group" "this" {
 }
 
 resource "aws_vpc_security_group_ingress_rule" "allowed" {
-  for_each = toset(var.allowed_security_group_ids)
+  count = 0 #for_each = toset(var.allowed_security_group_ids)
 
   security_group_id            = aws_security_group.this.id
   description                  = "Allow PostgreSQL access from ${each.value}"
