@@ -184,6 +184,10 @@ resource "helm_release" "aws_lbc" {
       error_message = "vpc_id is required when enable_aws_lbc is true."
     }
   }
+
+  depends_on = [
+    aws_iam_role_policy_attachment.aws_lbc,
+  aws_eks_pod_identity_association.aws_lbc]
 }
 
 # ==============================================================================
@@ -233,6 +237,7 @@ resource "helm_release" "nginx_ingress" {
       }
     ]
   )
+  timeout = 900
 
   depends_on = [helm_release.aws_lbc]
 }
