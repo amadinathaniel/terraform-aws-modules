@@ -5,12 +5,18 @@ data "aws_iam_policy_document" "cluster_autoscaler_assume" {
   count = var.enable_cluster_autoscaler ? 1 : 0
 
   statement {
+    actions = ["sts:AssumeRoleWithWebIdentity"]
     effect  = "Allow"
-    actions = ["sts:AssumeRole", "sts:TagSession"]
+
+    condition {
+      test     = "StringEquals"
+      variable = "${replace(var.oidc_provider_url, "https://", "")}:sub"
+      values   = ["system:serviceaccount:kube-system:cluster-autoscaler"]
+    }
 
     principals {
-      type        = "Service"
-      identifiers = ["pods.eks.amazonaws.com"]
+      type        = "Federated"
+      identifiers = [var.oidc_provider_arn]
     }
   }
 }
@@ -24,6 +30,13 @@ resource "aws_iam_role" "cluster_autoscaler" {
     Name      = "${var.cluster_name}-cluster-autoscaler"
     Component = "helm-releases"
   })
+
+  lifecycle {
+    precondition {
+      condition     = var.oidc_provider_arn != "" && var.oidc_provider_url != ""
+      error_message = "oidc_provider_arn and oidc_provider_url are required when enable_cluster_autoscaler is true."
+    }
+  }
 }
 
 resource "aws_iam_policy" "cluster_autoscaler" {
@@ -71,14 +84,6 @@ resource "aws_iam_role_policy_attachment" "cluster_autoscaler" {
   role       = aws_iam_role.cluster_autoscaler[0].name
 }
 
-resource "aws_eks_pod_identity_association" "cluster_autoscaler" {
-  count           = var.enable_cluster_autoscaler ? 1 : 0
-  cluster_name    = var.cluster_name
-  namespace       = "kube-system"
-  service_account = "cluster-autoscaler"
-  role_arn        = aws_iam_role.cluster_autoscaler[0].arn
-}
-
 resource "helm_release" "cluster_autoscaler" {
   count      = var.enable_cluster_autoscaler ? 1 : 0
   name       = "autoscaler"
@@ -87,9 +92,18 @@ resource "helm_release" "cluster_autoscaler" {
   namespace  = "kube-system"
   version    = var.cluster_autoscaler_version
 
-  set = [{
-    name  = "rbac.serviceAccount.name"
-    value = "cluster-autoscaler"
+  set = [
+    {
+      name  = "rbac.serviceAccount.create"
+      value = "true"
+    },
+    {
+      name  = "rbac.serviceAccount.name"
+      value = "cluster-autoscaler"
+    },
+    {
+      name  = "rbac.serviceAccount.annotations.eks\\.amazonaws\\.com/role-arn"
+      value = aws_iam_role.cluster_autoscaler[0].arn
     },
     {
       name  = "autoDiscovery.clusterName"
@@ -102,12 +116,12 @@ resource "helm_release" "cluster_autoscaler" {
   ]
 
   depends_on = [
-    aws_iam_role_policy_attachment.cluster_autoscaler,
-    aws_eks_pod_identity_association.cluster_autoscaler
+    aws_iam_role_policy_attachment.cluster_autoscaler
   ]
 
-  timeout = 900
-  atomic  = true
+  timeout         = 900
+  atomic          = true
+  cleanup_on_fail = true
 }
 
 # ==============================================================================
@@ -117,12 +131,18 @@ data "aws_iam_policy_document" "aws_lbc_assume" {
   count = var.enable_aws_lbc ? 1 : 0
 
   statement {
+    actions = ["sts:AssumeRoleWithWebIdentity"]
     effect  = "Allow"
-    actions = ["sts:AssumeRole", "sts:TagSession"]
+
+    condition {
+      test     = "StringEquals"
+      variable = "${replace(var.oidc_provider_url, "https://", "")}:sub"
+      values   = ["system:serviceaccount:kube-system:aws-load-balancer-controller"]
+    }
 
     principals {
-      type        = "Service"
-      identifiers = ["pods.eks.amazonaws.com"]
+      type        = "Federated"
+      identifiers = [var.oidc_provider_arn]
     }
   }
 }
@@ -136,6 +156,13 @@ resource "aws_iam_role" "aws_lbc" {
     Name      = "${var.cluster_name}-aws-lbc"
     Component = "helm-releases"
   })
+
+  lifecycle {
+    precondition {
+      condition     = var.oidc_provider_arn != "" && var.oidc_provider_url != ""
+      error_message = "oidc_provider_arn and oidc_provider_url are required when enable_aws_lbc is true."
+    }
+  }
 }
 
 resource "aws_iam_policy" "aws_lbc" {
@@ -155,14 +182,6 @@ resource "aws_iam_role_policy_attachment" "aws_lbc" {
   role       = aws_iam_role.aws_lbc[0].name
 }
 
-resource "aws_eks_pod_identity_association" "aws_lbc" {
-  count           = var.enable_aws_lbc ? 1 : 0
-  cluster_name    = var.cluster_name
-  namespace       = "kube-system"
-  service_account = "aws-load-balancer-controller"
-  role_arn        = aws_iam_role.aws_lbc[0].arn
-}
-
 resource "helm_release" "aws_lbc" {
   count      = var.enable_aws_lbc ? 1 : 0
   name       = "aws-load-balancer-controller"
@@ -177,8 +196,16 @@ resource "helm_release" "aws_lbc" {
       value = var.cluster_name
     },
     {
+      name  = "serviceAccount.create"
+      value = "true"
+    },
+    {
       name  = "serviceAccount.name"
       value = "aws-load-balancer-controller"
+    },
+    {
+      name  = "serviceAccount.annotations.eks\\.amazonaws\\.com/role-arn"
+      value = aws_iam_role.aws_lbc[0].arn
     },
     {
       name  = "vpcId"
@@ -198,11 +225,11 @@ resource "helm_release" "aws_lbc" {
   }
 
   depends_on = [
-    aws_iam_role_policy_attachment.aws_lbc,
-  aws_eks_pod_identity_association.aws_lbc]
+    aws_iam_role_policy_attachment.aws_lbc
+  ]
 
-  timeout = 900
-  atomic  = true
+  atomic          = true
+  cleanup_on_fail = true
 }
 
 # ==============================================================================
@@ -244,15 +271,21 @@ resource "helm_release" "nginx_ingress" {
       {
         name  = "controller.service.annotations.service\\.beta\\.kubernetes\\.io/aws-load-balancer-nlb-target-type"
         value = "ip"
+      },
+      {
+        name  = "controller.service.annotations.service\\.beta\\.kubernetes\\.io/aws-load-balancer-target-group-attributes"
+        value = "deregistration_delay.timeout_seconds=30"
       }
       ] : [
       {
         name  = "controller.service.annotations.service\\.beta\\.kubernetes\\.io/aws-load-balancer-type"
         value = "nlb"
-      }
+      },
     ]
   )
-  timeout = 900
+
+  atomic          = true
+  cleanup_on_fail = true
 
   depends_on = [helm_release.aws_lbc]
 }

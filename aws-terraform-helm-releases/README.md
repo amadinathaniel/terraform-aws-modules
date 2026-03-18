@@ -6,8 +6,8 @@ Terraform module to install Helm charts on EKS with required IAM roles and pod i
 
 | Chart | Type | Default | Description |
 |-------|------|---------|-------------|
-| Cluster Autoscaler | Helm + IAM | Disabled | Automatic node scaling |
-| AWS Load Balancer Controller | Helm + IAM | Disabled | Kubernetes-native ALB/NLB management |
+| Cluster Autoscaler | Helm + IAM (IRSA) | Disabled | Automatic node scaling |
+| AWS Load Balancer Controller | Helm + IAM (IRSA) | Disabled | Kubernetes-native ALB/NLB management |
 | Nginx Ingress Controller | Helm | Disabled | Ingress routing via NLB (IP mode with LBC, instance mode without) |
 | Cert Manager | Helm | Disabled | TLS certificate management |
 | External Secrets Operator | Helm + IAM | Disabled | Secrets Manager integration via IRSA |
@@ -64,8 +64,8 @@ module "helm_releases" {
 | cluster_name | EKS cluster name | string | - | yes |
 | vpc_id | VPC ID (required for AWS LBC) | string | "" | no |
 | aws_region | AWS region | string | - | yes |
-| oidc_provider_arn | OIDC provider ARN (required for External Secrets) | string | "" | no |
-| oidc_provider_url | OIDC provider URL (required for External Secrets) | string | "" | no |
+| oidc_provider_arn | OIDC provider ARN. Required for IRSA-based addons such as External Secrets, AWS Load Balancer Controller and Cluster Autoscaler. | string | "" | no |
+| oidc_provider_url | OIDC provider URL. Required for IRSA-based addons such as External Secrets, AWS Load Balancer Controller and Cluster Autoscaler. | string | "" | no |
 | enable_cluster_autoscaler | Install Cluster Autoscaler | bool | false | no |
 | enable_aws_lbc | Install AWS Load Balancer Controller | bool | false | no |
 | enable_nginx_ingress | Install Nginx Ingress Controller | bool | false | no |
@@ -96,3 +96,4 @@ module "helm_releases" {
 
 - `enable_aws_lbc` requires `vpc_id` to be set
 - `enable_external_secrets` requires `oidc_provider_arn` to be set
+- `enable_aws_lbc` and `enable_cluster_autoscaler` require `oidc_provider_arn` and `oidc_provider_url` to be set
