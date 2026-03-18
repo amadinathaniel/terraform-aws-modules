@@ -93,8 +93,8 @@ variable "vpc_id" {
 
 variable "allowed_security_group_ids" {
   description = "List of security group IDs allowed to access the database."
-  type        = list(string)
-  default     = []
+  type        = map(string)
+  default     = {}
 }
 
 variable "common_tags" {
