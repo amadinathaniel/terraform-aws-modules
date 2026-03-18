@@ -58,7 +58,7 @@ module "rds" {
 | performance_insights_enabled | Enable Performance Insights | bool | false | no |
 | subnet_ids | Subnet IDs for DB subnet group | list(string) | - | yes |
 | vpc_id | VPC ID for security group | string | - | yes |
-| allowed_security_group_ids | SG IDs allowed to access the database | list(string) | [] | no |
+| allowed_security_group_ids | SG IDs allowed to access the database | map(string) | {} | no |
 | common_tags | Common tags for all resources | map(string) | {} | no |
 
 ## Outputs

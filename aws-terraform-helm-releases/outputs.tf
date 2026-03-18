@@ -17,3 +17,8 @@ output "nginx_ingress_controller_name" {
   description = "Name of the Nginx Ingress Helm release (if created)."
   value       = length(helm_release.nginx_ingress) > 0 ? helm_release.nginx_ingress[0].name : ""
 }
+
+output "external_dns_role_arn" {
+  description = "ARN of the ExternalDNS IAM role (if created)."
+  value       = length(aws_iam_role.external_dns) > 0 ? aws_iam_role.external_dns[0].arn : ""
+}

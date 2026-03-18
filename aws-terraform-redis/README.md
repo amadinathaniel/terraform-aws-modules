@@ -53,7 +53,7 @@ module "redis" {
 | create_auth_token | Create random AUTH token | bool | true | no |
 | subnet_ids | Subnet IDs for cache subnet group | list(string) | - | yes |
 | vpc_id | VPC ID for security group | string | - | yes |
-| allowed_security_group_ids | SG IDs allowed to access Redis | list(string) | [] | no |
+| allowed_security_group_ids | SG IDs allowed to access Redis | map(string) | {} | no |
 | common_tags | Common tags for all resources | map(string) | {} | no |
 
 ## Outputs

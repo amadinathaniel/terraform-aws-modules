@@ -11,6 +11,7 @@ Terraform module to install Helm charts on EKS with required IAM roles and pod i
 | Nginx Ingress Controller | Helm | Disabled | Ingress routing via NLB (IP mode with LBC, instance mode without) |
 | Cert Manager | Helm | Disabled | TLS certificate management |
 | External Secrets Operator | Helm + IAM | Disabled | Secrets Manager integration via IRSA |
+| External DNS | Helm + IAM | Disabled | External DNS (Route53) integration via IRSA |
 
 ## Nginx Ingress + LBC Behavior
 
@@ -26,6 +27,7 @@ Cluster Autoscaler
         └── Nginx Ingress Controller
               └── Cert Manager
 External Secrets Operator (independent, requires OIDC)
+External DNS (requires OIDC)
 ```
 
 ## Usage
@@ -69,12 +71,15 @@ module "helm_releases" {
 | enable_nginx_ingress | Install Nginx Ingress Controller | bool | false | no |
 | enable_cert_manager | Install Cert Manager | bool | false | no |
 | enable_external_secrets | Install External Secrets Operator | bool | false | no |
+| enable_external_dns | Install ExternalDNS via Helm with IAM role | bool | false | no |
+| external_dns_domain_filter | Domain to manage | string | "" | no |
 | external_secrets_allowed_secrets_path | Secrets Manager path pattern | string | "*" | no |
 | cluster_autoscaler_version | Chart version | string | "9.54.0" | no |
 | aws_lbc_version | Chart version | string | "1.17.1" | no |
 | nginx_ingress_version | Chart version | string | "4.14.2" | no |
 | cert_manager_version | Chart version | string | "v1.19.2" | no |
 | external_secrets_version | Chart version | string | "1.3.2" | no |
+| external_dns_version | Chart version | string | "1.19.0" | no |
 | common_tags | Common tags | map(string) | {} | no |
 
 ## Outputs
@@ -85,6 +90,7 @@ module "helm_releases" {
 | aws_lbc_role_arn | AWS LBC IAM role ARN |
 | external_secrets_role_arn | External Secrets IAM role ARN |
 | nginx_ingress_controller_name | Nginx Ingress Helm release name |
+| external_dns_role_arn | ARN of the ExternalDNS IAM role |
 
 ## Preconditions
 

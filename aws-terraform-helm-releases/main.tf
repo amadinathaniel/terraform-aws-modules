@@ -382,3 +382,116 @@ resource "helm_release" "external_secrets" {
     helm_release.aws_lbc
   ]
 }
+
+# ==============================================================================
+# 6. ExternalDNS
+# ==============================================================================
+data "aws_iam_policy_document" "external_dns_assume" {
+  count = var.enable_external_dns ? 1 : 0
+
+  statement {
+    effect  = "Allow"
+    actions = ["sts:AssumeRole", "sts:TagSession"]
+
+    principals {
+      type        = "Service"
+      identifiers = ["pods.eks.amazonaws.com"]
+    }
+  }
+}
+
+resource "aws_iam_role" "external_dns" {
+  count              = var.enable_external_dns ? 1 : 0
+  name               = "${var.cluster_name}-external-dns"
+  assume_role_policy = data.aws_iam_policy_document.external_dns_assume[0].json
+
+  tags = merge(var.common_tags, {
+    Name      = "${var.cluster_name}-external-dns"
+    Component = "helm-releases"
+  })
+}
+
+resource "aws_iam_policy" "external_dns" {
+  count = var.enable_external_dns ? 1 : 0
+  name  = "${var.cluster_name}-external-dns"
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect   = "Allow"
+        Action   = ["route53:ChangeResourceRecordSets"]
+        Resource = ["arn:aws:route53:::hostedzone/*"]
+      },
+      {
+        Effect = "Allow"
+        Action = [
+          "route53:ListHostedZones",
+          "route53:ListResourceRecordSets",
+          "route53:ListTagsForResource"
+        ]
+        Resource = ["*"]
+      }
+    ]
+  })
+
+  tags = merge(var.common_tags, {
+    Component = "helm-releases"
+  })
+}
+
+resource "aws_iam_role_policy_attachment" "external_dns" {
+  count      = var.enable_external_dns ? 1 : 0
+  policy_arn = aws_iam_policy.external_dns[0].arn
+  role       = aws_iam_role.external_dns[0].name
+}
+
+resource "aws_eks_pod_identity_association" "external_dns" {
+  count           = var.enable_external_dns ? 1 : 0
+  cluster_name    = var.cluster_name
+  namespace       = "external-dns"
+  service_account = "external-dns"
+  role_arn        = aws_iam_role.external_dns[0].arn
+}
+
+resource "helm_release" "external_dns" {
+  count            = var.enable_external_dns ? 1 : 0
+  name             = "external-dns"
+  repository       = "https://kubernetes-sigs.github.io/external-dns"
+  chart            = "external-dns"
+  namespace        = "external-dns"
+  create_namespace = true
+  version          = var.external_dns_version
+
+  set = [
+    {
+      name  = "provider.name"
+      value = "aws"
+    },
+    {
+      name  = "domainFilters[0]"
+      value = var.external_dns_domain_filter
+    },
+    {
+      name  = "policy"
+      value = "sync"
+    },
+    {
+      name  = "serviceAccount.name"
+      value = "external-dns"
+    },
+    {
+      name  = "txtOwnerId"
+      value = var.cluster_name
+    }
+  ]
+
+  lifecycle {
+    precondition {
+      condition     = !var.enable_external_dns || var.external_dns_domain_filter != ""
+      error_message = "external_dns_domain_filter is required when enable_external_dns is true."
+    }
+  }
+
+  depends_on = [helm_release.nginx_ingress]
+}

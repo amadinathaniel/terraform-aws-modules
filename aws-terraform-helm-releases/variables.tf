@@ -67,6 +67,18 @@ variable "enable_external_secrets" {
   default     = false
 }
 
+variable "enable_external_dns" {
+  description = "Install ExternalDNS via Helm with IAM role."
+  type        = bool
+  default     = false
+}
+
+variable "external_dns_domain_filter" {
+  description = "Domain to manage (e.g. nathanielamadi.live)."
+  type        = string
+  default     = ""
+}
+
 variable "external_secrets_allowed_secrets_path" {
   description = "Secrets Manager path pattern the External Secrets role can access."
   type        = string
@@ -104,6 +116,12 @@ variable "external_secrets_version" {
   description = "Helm chart version for External Secrets Operator."
   type        = string
   default     = "1.3.2"
+}
+
+variable "external_dns_version" {
+  description = "Helm chart version for ExternalDNS."
+  type        = string
+  default     = "1.19.0"
 }
 
 # ------------------------------------------------------------------------------
