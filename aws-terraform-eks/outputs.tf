@@ -57,3 +57,8 @@ output "alb_dns_name" {
   description = "DNS name of the Application Load Balancer (if enabled)."
   value       = length(aws_lb.this) > 0 ? aws_lb.this[0].dns_name : ""
 }
+
+output "cluster_primary_security_group_id" {
+  description = "EKS-managed cluster security group ID (automatically attached to nodes)."
+  value       = aws_eks_cluster.this.vpc_config[0].cluster_security_group_id
+}
